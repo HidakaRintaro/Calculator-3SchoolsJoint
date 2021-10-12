@@ -16,9 +16,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        TextView tvOutput = findViewById(R.id.formula);
+
         Button btClickText = findViewById(R.id.one);
 //        btClickText.setOnClickListener(new ButtonClickListener());
-
-
+        tvOutput.setText("1");
     }
 }
