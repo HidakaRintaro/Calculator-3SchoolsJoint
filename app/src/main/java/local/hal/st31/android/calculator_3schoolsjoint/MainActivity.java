@@ -7,9 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-
-import org.w3c.dom.Text;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
@@ -49,11 +46,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class ButtonClickListener implements View.OnClickListener {
+        TextView tvResult = findViewById(R.id.tvResult);
+        TextView tvHistory = findViewById(R.id.tvHistory);
+
         @Override
         public void onClick(View view) {
             Button button = (Button) view;
-
-            TextView tvOutput = findViewById(R.id.formula);
 
             int id = view.getId();
             String clickBtn =  button.getText().toString();
@@ -69,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.bt8:
                 case R.id.bt9:
                 case R.id.btDot:
-                    addTextView(null, clickBtn);
+                    addTextView(clickBtn);
                     inputVal += clickBtn;
                     break;
                 case R.id.btAdd:
@@ -77,22 +75,23 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.btMultiply:
                 case R.id.btDivide:
                     if(!(inputVal.equals(""))) {
-                        addList(null, inputVal, clickBtn);
+                        addList(inputVal, clickBtn);
                     }
                     break;
                 case R.id.btEqual:
                     if(!(inputVal.equals(""))) {
-                        addList(null, inputVal, clickBtn);
+                        addList(inputVal, clickBtn);
                     }
                     String result = calculate().toString();
-                    tvOutput.setText(result);
+                    tvResult.setText(result);
                     inputVal = result;
 
                     numList.clear();
                     opeList.clear();
                     break;
                 case R.id.btClear:
-                    tvOutput.setText("");
+                    tvResult.setText("");
+                    tvHistory.setText("");
                     numList.clear();
                     opeList.clear();
                     inputVal= "";
@@ -100,16 +99,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        private void addTextView(TextView textView, String addStr) {
-            TextView tvOutput = findViewById(R.id.formula);
-            TextView tvHistory = findViewById(R.id.tvHistory);
-            tvOutput.append(addStr);
+        private void addTextView(String addStr) {
+            tvResult.append(addStr);
+            if ("=".equals(addStr)) {
+                tvHistory.setText("(" + tvHistory.getText().toString() + ")");
+            }
+            else {
+                tvHistory.append(addStr);
+            }
         }
 
-        private void addList(TextView tvFormula, String strNum, String ope) {
-            TextView tvOutput = findViewById(R.id.formula);
-
-            addTextView(tvOutput, ope);
+        private void addList(String strNum, String ope) {
+            addTextView(ope);
             numList.add(new BigDecimal(strNum));
             opeList.add(ope);
             inputVal = "";
@@ -128,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
                 opeList.remove(i);
                 i--;
             }
-            else if(opeList.get(i) == "-") {
+            else if("-".equals(opeList.get(i))) {
                 opeList.set(i, "+");
                 numList.set(i+1, numList.get(i+1).negate());
             }
