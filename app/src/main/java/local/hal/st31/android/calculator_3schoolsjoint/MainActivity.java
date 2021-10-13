@@ -34,9 +34,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.bt7).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.bt8).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.bt9).setOnClickListener(new ButtonClickListener());
-
-//        findViewById(R.id.btDot).setOnClickListener(new ButtonClickListener());
-
+        findViewById(R.id.btDot).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btEqual).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btAdd).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btSubtract).setOnClickListener(new ButtonClickListener());
@@ -93,10 +91,6 @@ public class MainActivity extends AppCompatActivity {
                     numList.clear();
                     opeList.clear();
                     break;
-//                case R.id.btDot:
-//                    addTextView(null, clickBtn);
-//                    inputVal += clickBtn;
-//                    break;
                 case R.id.btClear:
                     tvOutput.setText("");
                     numList.clear();
@@ -126,8 +120,8 @@ public class MainActivity extends AppCompatActivity {
         int i = 0;
 
         while(i < opeList.size()) {
-            if(opeList.get(i) == "×" | opeList.get(i) == "÷") {
-                BigDecimal resultMultiDiv = opeList.get(i) == "×" ? numList.get(i).multiply(numList.get(i+1)) : numList.get(i).divide(numList.get(i+1));
+            if("×".equals(opeList.get(i)) || "÷".equals(opeList.get(i))) {
+                BigDecimal resultMultiDiv = "×".equals(opeList.get(i)) ? numList.get(i).multiply(numList.get(i+1)) : numList.get(i).divide(numList.get(i+1));
 
                 numList.set(i, resultMultiDiv);
                 numList.remove(i+1);
