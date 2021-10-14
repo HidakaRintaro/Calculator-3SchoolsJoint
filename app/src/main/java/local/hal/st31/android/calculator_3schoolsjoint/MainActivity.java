@@ -12,9 +12,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<BigDecimal> numList = new ArrayList<>();
-    private ArrayList<String> opeList = new ArrayList<>();
     private String inputVal = "";
+    private ArrayList<String> inputList = new ArrayList<>();
+
+    private ArrayList<String> rpnList = new ArrayList<>();
+    private ArrayList<String> opeStack = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,8 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btDivide).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btClear).setOnClickListener(new ButtonClickListener());
 //        findViewById(R.id.btPercent).setOnClickListener(new ButtonClickListener());
-//        findViewById(R.id.btBracketsStart).setOnClickListener(new ButtonClickListener());
-//        findViewById(R.id.btBracketsEnd).setOnClickListener(new ButtonClickListener());
+        findViewById(R.id.btBracketsStart).setOnClickListener(new ButtonClickListener());
+        findViewById(R.id.btBracketsEnd).setOnClickListener(new ButtonClickListener());
 
 
     }
@@ -70,6 +72,16 @@ public class MainActivity extends AppCompatActivity {
                     addTextView(clickBtn);
                     inputVal += clickBtn;
                     break;
+                case R.id.btEqual:
+                    if(!(inputVal.equals(""))) {
+                        addList(inputVal, clickBtn);
+                    }
+                    infixNotationToRPN();
+//                    String result = calculate().toString();
+                    tvResult.setText(rpnList.toString());
+                    inputVal = "1";
+
+                    break;
                 case R.id.btAdd:
                 case R.id.btSubtract:
                 case R.id.btMultiply:
@@ -78,22 +90,16 @@ public class MainActivity extends AppCompatActivity {
                         addList(inputVal, clickBtn);
                     }
                     break;
-                case R.id.btEqual:
-                    if(!(inputVal.equals(""))) {
-                        addList(inputVal, clickBtn);
-                    }
-                    String result = calculate().toString();
-                    tvResult.setText(result);
-                    inputVal = result;
+                // （を入力したら）の未入力を防ぐために自動入力にしたい
+//                case R.id.btBracketsStart:
+//                case R.id.btBracketsEnd:
 
-                    numList.clear();
-                    opeList.clear();
-                    break;
                 case R.id.btClear:
                     tvResult.setText("");
                     tvHistory.setText("");
-                    numList.clear();
-                    opeList.clear();
+                    inputList.clear();
+                    rpnList.clear();
+                    opeStack.clear();
                     inputVal= "";
                     break;
             }
@@ -102,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         private void addTextView(String addStr) {
             tvResult.append(addStr);
             if ("=".equals(addStr)) {
-                tvHistory.setText("(" + tvHistory.getText().toString() + ")");
+                tvHistory.setText(String.format("(%s)", tvHistory.getText().toString()));
             }
             else {
                 tvHistory.append(addStr);
@@ -111,36 +117,75 @@ public class MainActivity extends AppCompatActivity {
 
         private void addList(String strNum, String ope) {
             addTextView(ope);
-            numList.add(new BigDecimal(strNum));
-            opeList.add(ope);
             inputVal = "";
+            inputList.add(strNum);
+            if (!"=".equals(ope)) inputList.add(ope);
         }
     }
 
-    private BigDecimal calculate() {
-        int i = 0;
+//    private BigDecimal calculate() {
+//        return result;
+//    }
 
-        while(i < opeList.size()) {
-            if("×".equals(opeList.get(i)) || "÷".equals(opeList.get(i))) {
-                BigDecimal resultMultiDiv = "×".equals(opeList.get(i)) ? numList.get(i).multiply(numList.get(i+1)) : numList.get(i).divide(numList.get(i+1));
-
-                numList.set(i, resultMultiDiv);
-                numList.remove(i+1);
-                opeList.remove(i);
-                i--;
+    private void infixNotationToRPN() {
+        for (String s : inputList) {
+            if ( isNumMatch(s) ) {
+                // 数値の時
+                rpnList.add(s);
             }
-            else if("-".equals(opeList.get(i))) {
-                opeList.set(i, "+");
-                numList.set(i+1, numList.get(i+1).negate());
+            else if ("(".equals(s)) {
+                opeStack.add(s);
             }
-            i++;
+            else if (")".equals(s)) {
+                for (int i = opeStack.size() - 1; i >= 0; i--) {
+                    if ("(".equals(opeStack.get(i))) {
+                        opeStack.remove(i);
+                        break;
+                    }
+                    rpnList.add(opeStack.get(i));
+                    opeStack.remove(i);
+                }
+            }
+            else {
+                while (opeStack.size() > 0) {
+                    if ( opeCompare(s, opeStack.get(opeStack.size() - 1)) ) break;
+                    rpnList.add(opeStack.get(opeStack.size() - 1));
+                    opeStack.remove(opeStack.size() - 1);
+                }
+                opeStack.add(s);
+            }
         }
-
-        BigDecimal result = new BigDecimal("0");
-        for(BigDecimal j : numList) {
-            result = result.add(j);
+        // 残りの符号を出力
+        while (opeStack.size() > 0) {
+            rpnList.add(opeStack.get(opeStack.size() - 1));
+            opeStack.remove(opeStack.size() - 1);
         }
+    }
 
-        return result;
+    /**
+     * 文字が数値(正負の整数と正負の小数)かどうか判断する
+     * @param s 判定する文字列
+     * @return boolean
+     */
+    private boolean isNumMatch(String s) {
+        return java.util.regex.Pattern.compile("^([1-9]\\d*|0)(\\.\\d+)?$|^(-[1-9]\\d*|0)(\\.\\d+)?$").matcher(s).matches();
+    }
+
+
+    private boolean opeCompare(String token, String stack) {
+        int i = opePriority(token) - opePriority(stack);
+
+        return i <= 0;
+    }
+
+    private int opePriority(String ope) {
+        if ("×".equals(ope) || "÷".equals(ope)) {
+            return 1;
+        }
+        else if ("+".equals(ope) || "-".equals(ope)) {
+            return 2;
+        }
+        //  () の時
+        return 99;
     }
 }
