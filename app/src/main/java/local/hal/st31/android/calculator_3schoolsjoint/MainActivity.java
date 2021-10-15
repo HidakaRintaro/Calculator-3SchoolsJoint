@@ -272,10 +272,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
             else {
-                while (opeStack.size() > 0) {
-                    if ( opeCompare(s, opeStack.get(opeStack.size() - 1)) ) break;
-                    rpnList.add(opeStack.get(opeStack.size() - 1));
-                    opeStack.remove(opeStack.size() - 1);
+                if (opeStack.size() > 0) {
+                    if ( opeCompare(s, opeStack.get(opeStack.size() - 1)) ) {
+                        for (int i = opeStack.size() - 1; i >= 0; i--) {
+                            rpnList.add(opeStack.get(i));
+                            opeStack.remove(i);
+                        }
+                    }
                 }
                 opeStack.add(s);
             }
@@ -299,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 演算子の優先順位を判断する
-     * トークンの方が優先順位が高い時と優先順位が高い時true、スタックの方が優先順位が高い時falseを返す
+     * スタックの優先順位がトークン以上の時true、トークンの優先順位がスタックより大きい時false
      * @param token
      * @param stack
      * @return boolean
@@ -307,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean opeCompare(String token, String stack) {
         int i = opePriority(token) - opePriority(stack);
 
-        return i <= 0;
+        return i >= 0;
     }
 
     /**
