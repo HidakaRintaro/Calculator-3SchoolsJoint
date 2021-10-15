@@ -20,5 +20,9 @@
     <string name="eight">8</string>
     <string name="nine">9</string>
     <string name="zero">0</string>
+
+    <string name="root2">&#8730;</string>
+    <string name="pi">&#960;</string>
+    <string name="factorial">x!</string>
     
 </resources>

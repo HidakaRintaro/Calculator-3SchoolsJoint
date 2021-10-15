@@ -49,6 +49,47 @@
 
         <TableRow
             android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <Button
+                android:id="@+id/btRoot"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/root2"
+                android:textSize="34sp"
+                android:layout_margin="4dp" />
+
+            <Button
+                android:id="@+id/btPi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pi"
+                android:textSize="34sp"
+                android:layout_margin="4dp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btFactorial"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/factorial"
+                android:textSize="34sp"
+                android:layout_margin="4dp"
+                android:textAllCaps="false" />
+
+            <Button
+                android:id="@+id/btPercent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="4dp"
+                android:layout_weight="1"
+                android:text="@string/percent"
+                android:textSize="34sp" />
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
             android:layout_height="match_parent">
 
             <Button
@@ -70,22 +111,14 @@
                 android:textSize="34sp" />
 
             <Button
-                android:id="@+id/btPercent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:layout_weight="1"
-                android:text="@string/percent"
-                android:textSize="34sp" />
-
-            <Button
                 android:id="@+id/btClear"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:layout_weight="1"
                 android:text="@string/clear"
-                android:textSize="34sp" />
+                android:textSize="34sp"
+                android:layout_span="2"/>
         </TableRow>
 
         <TableRow

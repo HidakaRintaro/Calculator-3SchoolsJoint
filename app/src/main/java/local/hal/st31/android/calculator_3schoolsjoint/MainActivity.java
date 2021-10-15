@@ -50,7 +50,9 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btBracketsStart).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btBracketsEnd).setOnClickListener(new ButtonClickListener());
 
-
+        findViewById(R.id.btRoot).setOnClickListener(new ButtonClickListener());
+        findViewById(R.id.btPi).setOnClickListener(new ButtonClickListener());
+        findViewById(R.id.btFactorial).setOnClickListener(new ButtonClickListener());
     }
 
     private class ButtonClickListener implements View.OnClickListener {
@@ -136,6 +138,48 @@ public class MainActivity extends AppCompatActivity {
                     }
                     if (bracketsFlag == 1) tvHistory.append(" )");
                     break;
+                case R.id.btRoot:
+                    if(!(inputVal.equals(""))) {
+                        BigDecimal p = new BigDecimal(inputVal);
+                        if ( Double.isNaN(Math.sqrt(p.doubleValue())) ) {
+                            tvResult.setText("");
+                            tvHistory.setText("");
+                            inputList.clear();
+                            viewList.clear();
+                            rpnList.clear();
+                            opeStack.clear();
+                            numStack.clear();
+                            inputVal= "";
+                            viewVal = "";
+                            bracketsFlag = 0;
+                            tvResult.setText("エラー");
+                            break;
+                        }
+                        inputVal = String.valueOf(Math.floor(Math.sqrt(p.doubleValue()) * 10000) / 10000);
+                        viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                        changeTextView();
+                    }
+                    if (bracketsFlag == 1) tvHistory.append(" )");
+                    break;
+                case R.id.btPi:
+                    inputVal = String.valueOf(Math.floor(Math.PI * 100) / 100);
+                    viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                    changeTextView();
+                    if (bracketsFlag == 1) tvHistory.append(" )");
+                    break;
+                case R.id.btFactorial:
+                    if(!(inputVal.equals(""))) {
+                        BigDecimal p = new BigDecimal(inputVal);
+                        int factorial = 1;
+                        for (int i = p.intValue(); i > 0; i--) {
+                            factorial *= i;
+                        }
+                        inputVal = String.valueOf(factorial);
+                        viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                        changeTextView();
+                    }
+                    if (bracketsFlag == 1) tvHistory.append(" )");
+                    break;
                 case R.id.btClear:
                     tvResult.setText("");
                     tvHistory.setText("");
@@ -166,8 +210,6 @@ public class MainActivity extends AppCompatActivity {
          */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addList(String ope) {
-            System.out.println(bracketsFlag);
-            System.out.println(ope);
             if (bracketsFlag == 2 && "=".equals(ope)) {
                 viewList.add(ope);
             }
@@ -246,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
             numStack.remove(numStack.size() - 1);
             numStack.add(result);
         }
-        return result;
+        return numStack.get(0);
     }
 
     /**
