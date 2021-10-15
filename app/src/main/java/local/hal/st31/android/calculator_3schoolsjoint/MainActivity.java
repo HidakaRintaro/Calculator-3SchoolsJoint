@@ -134,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
                         viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
                         changeTextView();
                     }
+                    if (bracketsFlag == 1) tvHistory.append(" )");
                     break;
                 case R.id.btClear:
                     tvResult.setText("");
