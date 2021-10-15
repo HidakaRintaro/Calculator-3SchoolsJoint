@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> viewList = new ArrayList<>(); // inputList を表示用に値を変更して保持
     private ArrayList<String> opeStack = new ArrayList<>(); // RPN変換時の演算子用のスタック
     private ArrayList<BigDecimal> numStack = new ArrayList<>(); // 計算時の数値用のスタック
+    private int bracketsFlag = 0; // 括弧中かのフラグ(enum: [0: 初期値, 1: 括弧の中, 2: 括弧終わり直後])
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,11 +77,16 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.bt8:
                 case R.id.bt9:
                 case R.id.btDot:
+                    if (bracketsFlag == 2) break;
                     inputVal += clickBtn;
                     viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
                     addTextView();
+                    if (bracketsFlag == 1) tvHistory.append(" )");
                     break;
                 case R.id.btEqual:
+                    if (bracketsFlag == 1) {
+                        addList(")");
+                    }
                     if(!(inputVal.equals(""))) {
                         addList(clickBtn);
                     }
@@ -89,19 +95,33 @@ public class MainActivity extends AppCompatActivity {
                     inputVal = result;
                     viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
                     tvResult.setText(viewVal);
+                    bracketsFlag = 0;
                     break;
                 case R.id.btAdd:
                 case R.id.btSubtract:
                 case R.id.btMultiply:
                 case R.id.btDivide:
-                    if(!(inputVal.equals(""))) {
+                    if(!(inputVal.equals("")) || bracketsFlag == 2) {
                         addList(clickBtn);
                     }
+                    if (bracketsFlag == 1) tvHistory.append(" )");
                     break;
-                // （を入力したら）の未入力を防ぐために自動入力にしたい
-//                case R.id.btBracketsStart:
-//                case R.id.btBracketsEnd:
-
+                case R.id.btBracketsStart:
+                    if (inputVal.equals("")) {
+                        bracketsFlag = 1;
+                        inputList.add("(");
+                        viewList.add("(");
+                        addHistoryView("(");
+                        tvHistory.append(" )");
+                    }
+                    break;
+                case R.id.btBracketsEnd:
+                    if(!(inputVal.equals("")) && bracketsFlag == 1) {
+                        addList(clickBtn);
+                        bracketsFlag = 2;
+                        addHistoryView(")");
+                    }
+                    break;
                 case R.id.btPercent:
                     if(!(inputVal.equals(""))) {
                         BigDecimal p = new BigDecimal(inputVal);
@@ -120,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
                     numStack.clear();
                     inputVal= "";
                     viewVal = "";
+                    bracketsFlag = 0;
                     break;
             }
         }
@@ -139,6 +160,19 @@ public class MainActivity extends AppCompatActivity {
          */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addList(String ope) {
+            if (bracketsFlag == 2) {
+                inputList.add(ope);
+                viewList.add(ope);
+
+                addHistoryView(ope);
+
+                tvResult.setText("");
+                inputVal = "";
+                viewVal = "";
+                bracketsFlag = 0;
+                return;
+            }
+
             inputList.add(inputVal);
             viewList.add(viewVal);
             if (!"=".equals(ope)) {
@@ -279,8 +313,7 @@ public class MainActivity extends AppCompatActivity {
     private int opePriority(String ope) {
         if ("×".equals(ope) || "÷".equals(ope)) {
             return 1;
-        }
-        else if ("+".equals(ope) || "-".equals(ope)) {
+        } else if ("+".equals(ope) || "-".equals(ope)) {
             return 2;
         }
         //  () の時
