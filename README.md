@@ -7,4 +7,4 @@
 - 言語 : Java
 
 ## 画面
-[画面写真](./doc/photo.png)
+<img src="./doc/photo.png" alt="画面の写真" height="500px">
