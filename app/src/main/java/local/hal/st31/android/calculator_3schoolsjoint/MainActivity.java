@@ -95,7 +95,12 @@ public class MainActivity extends AppCompatActivity {
                     inputVal = result;
                     viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
                     tvResult.setText(viewVal);
+
+                    viewList.add(viewVal);
+                    addHistoryView("=");
                     bracketsFlag = 0;
+                    inputList.clear();
+                    viewList.clear();
                     break;
                 case R.id.btAdd:
                 case R.id.btSubtract:
@@ -177,8 +182,8 @@ public class MainActivity extends AppCompatActivity {
             viewList.add(viewVal);
             if (!"=".equals(ope)) {
                 inputList.add(ope);
-                viewList.add(ope);
             }
+            viewList.add(ope);
             addHistoryView(ope);
 
             tvResult.setText("");
@@ -192,10 +197,8 @@ public class MainActivity extends AppCompatActivity {
          */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addHistoryView(String ope) {
-            if ("=".equals(ope)) {
-                tvHistory.setText(String.format("(%s)", String.join(" ", viewList)));
-            }
-            else if ("".equals(ope)) {
+            if ("".equals(ope)) {
+                // 現状は％の時のみ仕様
                 tvHistory.setText(String.format("%s %s", String.join(" ", viewList), viewVal));
             }
             else {
