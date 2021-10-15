@@ -85,8 +85,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.btEqual:
                     if (bracketsFlag == 1) {
                         addList(")");
+                        bracketsFlag = 2;
                     }
-                    if(!(inputVal.equals(""))) {
+                    if(!(inputVal.equals("")) || bracketsFlag == 2) {
                         addList(clickBtn);
                     }
                     infixNotationToRPN();
@@ -165,25 +166,26 @@ public class MainActivity extends AppCompatActivity {
          */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addList(String ope) {
-            if (bracketsFlag == 2) {
+            System.out.println(bracketsFlag);
+            System.out.println(ope);
+            if (bracketsFlag == 2 && "=".equals(ope)) {
+                viewList.add(ope);
+            }
+            else if (bracketsFlag == 2) {
                 inputList.add(ope);
                 viewList.add(ope);
 
-                addHistoryView(ope);
-
-                tvResult.setText("");
-                inputVal = "";
-                viewVal = "";
                 bracketsFlag = 0;
-                return;
+            }
+            else {
+                inputList.add(inputVal);
+                viewList.add(viewVal);
+                if (!"=".equals(ope)) {
+                    inputList.add(ope);
+                }
+                viewList.add(ope);
             }
 
-            inputList.add(inputVal);
-            viewList.add(viewVal);
-            if (!"=".equals(ope)) {
-                inputList.add(ope);
-            }
-            viewList.add(ope);
             addHistoryView(ope);
 
             tvResult.setText("");
