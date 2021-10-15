@@ -16,11 +16,11 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    private String inputVal = "";
-    private String viewVal = "";
-    private ArrayList<String> inputList = new ArrayList<>(); // 中置記法で式を保持
-    private ArrayList<String> rpnList = new ArrayList<>(); // 逆ポーランド記法で式を保持
-    private ArrayList<String> viewList = new ArrayList<>(); // 表示用の中置記法で式を保持したリスト
+    private String inputVal = ""; // 入力中の値
+    private String viewVal = ""; // inputVal を表示用に変更した値
+    private ArrayList<String> inputList = new ArrayList<>(); // 中置記法でそれぞれの値を保持
+    private ArrayList<String> rpnList = new ArrayList<>(); // 逆ポーランド記法でそれぞれの値を保持
+    private ArrayList<String> viewList = new ArrayList<>(); // inputList を表示用に値を変更して保持
     private ArrayList<String> opeStack = new ArrayList<>(); // RPN変換時の演算子用のスタック
     private ArrayList<BigDecimal> numStack = new ArrayList<>(); // 計算時の数値用のスタック
 
@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                         BigDecimal p = new BigDecimal(inputVal);
                         inputVal = p.divide(new BigDecimal(100)).toString();
                         viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
-                        changeTextView(viewVal);
+                        changeTextView();
                     }
                     break;
                 case R.id.btClear:
@@ -124,12 +124,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * ResultとHistoryへの表示
+         */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addTextView() {
             tvResult.setText(viewVal);
             addHistoryView("");
         }
 
+        /**
+         * Listへの値追加とResultとそれの保持変数の初期化
+         * @param ope
+         */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addList(String ope) {
             inputList.add(inputVal);
@@ -145,6 +152,10 @@ public class MainActivity extends AppCompatActivity {
             viewVal = "";
         }
 
+        /**
+         * Historyの表示
+         * @param ope
+         */
         @RequiresApi(api = Build.VERSION_CODES.O)
         private void addHistoryView(String ope) {
             if ("=".equals(ope)) {
@@ -158,13 +169,20 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        /**
+         * TextViewとHistoryの表示を変更する
+         */
         @RequiresApi(api = Build.VERSION_CODES.O)
-        private void changeTextView(String changeStr) {
-            tvResult.setText(changeStr);
+        private void changeTextView() {
+            tvResult.setText(inputVal);
             tvHistory.setText(String.format("%s %s", String.join(" ", viewList), viewVal));
         }
     }
 
+    /**
+     * 逆ポーランド記法の式を計算する
+     * @return BigDecimal
+     */
     private BigDecimal calculate() {
         BigDecimal result = new BigDecimal("0");
         for (String s : rpnList) {
@@ -192,6 +210,9 @@ public class MainActivity extends AppCompatActivity {
         return result;
     }
 
+    /**
+     * 中置記法を逆ポーランド記法(RPN)に変換する
+     */
     private void infixNotationToRPN() {
         for (String s : inputList) {
             if ( isNumMatch(s) ) {
@@ -228,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 文字が数値(正負の整数と正負の小数)かどうか判断する
+     * 文字が数値(正負の整数と正負の小数)ならtrue、それ以外はfalseを返す
      * @param s 判定する文字列
      * @return boolean
      */
@@ -237,12 +258,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * 演算子の優先順位を判断する
+     * トークンの方が優先順位が高い時と優先順位が高い時true、スタックの方が優先順位が高い時falseを返す
+     * @param token
+     * @param stack
+     * @return boolean
+     */
     private boolean opeCompare(String token, String stack) {
         int i = opePriority(token) - opePriority(stack);
 
         return i <= 0;
     }
 
+    /**
+     * 演算子に対応した数値を返す
+     * @param ope 演算子
+     * @return int
+     */
     private int opePriority(String ope) {
         if ("×".equals(ope) || "÷".equals(ope)) {
             return 1;
