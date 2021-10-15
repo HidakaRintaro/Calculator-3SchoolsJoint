@@ -1,22 +1,28 @@
 package local.hal.st31.android.calculator_3schoolsjoint;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     private String inputVal = "";
-    private ArrayList<String> inputList = new ArrayList<>();
-
-    private ArrayList<String> rpnList = new ArrayList<>();
-    private ArrayList<String> opeStack = new ArrayList<>();
+    private String viewVal = "";
+    private ArrayList<String> inputList = new ArrayList<>(); // 中置記法で式を保持
+    private ArrayList<String> rpnList = new ArrayList<>(); // 逆ポーランド記法で式を保持
+    private ArrayList<String> viewList = new ArrayList<>(); // 表示用の中置記法で式を保持したリスト
+    private ArrayList<String> opeStack = new ArrayList<>(); // RPN変換時の演算子用のスタック
+    private ArrayList<BigDecimal> numStack = new ArrayList<>(); // 計算時の数値用のスタック
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btMultiply).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btDivide).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btClear).setOnClickListener(new ButtonClickListener());
-//        findViewById(R.id.btPercent).setOnClickListener(new ButtonClickListener());
+        findViewById(R.id.btPercent).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btBracketsStart).setOnClickListener(new ButtonClickListener());
         findViewById(R.id.btBracketsEnd).setOnClickListener(new ButtonClickListener());
 
@@ -51,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         TextView tvResult = findViewById(R.id.tvResult);
         TextView tvHistory = findViewById(R.id.tvHistory);
 
+        @RequiresApi(api = Build.VERSION_CODES.O)
         @Override
         public void onClick(View view) {
             Button button = (Button) view;
@@ -69,63 +76,121 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.bt8:
                 case R.id.bt9:
                 case R.id.btDot:
-                    addTextView(clickBtn);
                     inputVal += clickBtn;
+                    viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                    addTextView();
                     break;
                 case R.id.btEqual:
                     if(!(inputVal.equals(""))) {
-                        addList(inputVal, clickBtn);
+                        addList(clickBtn);
                     }
                     infixNotationToRPN();
-//                    String result = calculate().toString();
-                    tvResult.setText(rpnList.toString());
-                    inputVal = "1";
-
+                    String result = calculate().toString();
+                    inputVal = result;
+                    viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                    tvResult.setText(viewVal);
                     break;
                 case R.id.btAdd:
                 case R.id.btSubtract:
                 case R.id.btMultiply:
                 case R.id.btDivide:
                     if(!(inputVal.equals(""))) {
-                        addList(inputVal, clickBtn);
+                        addList(clickBtn);
                     }
                     break;
                 // （を入力したら）の未入力を防ぐために自動入力にしたい
 //                case R.id.btBracketsStart:
 //                case R.id.btBracketsEnd:
 
+                case R.id.btPercent:
+                    if(!(inputVal.equals(""))) {
+                        BigDecimal p = new BigDecimal(inputVal);
+                        inputVal = p.divide(new BigDecimal(100)).toString();
+                        viewVal = NumberFormat.getNumberInstance().format(new BigDecimal(inputVal));
+                        changeTextView(viewVal);
+                    }
+                    break;
                 case R.id.btClear:
                     tvResult.setText("");
                     tvHistory.setText("");
                     inputList.clear();
+                    viewList.clear();
                     rpnList.clear();
                     opeStack.clear();
+                    numStack.clear();
                     inputVal= "";
+                    viewVal = "";
                     break;
             }
         }
 
-        private void addTextView(String addStr) {
-            tvResult.append(addStr);
-            if ("=".equals(addStr)) {
-                tvHistory.setText(String.format("(%s)", tvHistory.getText().toString()));
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private void addTextView() {
+            tvResult.setText(viewVal);
+            addHistoryView("");
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private void addList(String ope) {
+            inputList.add(inputVal);
+            viewList.add(viewVal);
+            if (!"=".equals(ope)) {
+                inputList.add(ope);
+                viewList.add(ope);
+            }
+            addHistoryView(ope);
+
+            tvResult.setText("");
+            inputVal = "";
+            viewVal = "";
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private void addHistoryView(String ope) {
+            if ("=".equals(ope)) {
+                tvHistory.setText(String.format("(%s)", String.join(" ", viewList)));
+            }
+            else if ("".equals(ope)) {
+                tvHistory.setText(String.format("%s %s", String.join(" ", viewList), viewVal));
             }
             else {
-                tvHistory.append(addStr);
+                tvHistory.setText(String.join(" ", viewList));
             }
         }
 
-        private void addList(String strNum, String ope) {
-            addTextView(ope);
-            inputVal = "";
-            inputList.add(strNum);
-            if (!"=".equals(ope)) inputList.add(ope);
+        @RequiresApi(api = Build.VERSION_CODES.O)
+        private void changeTextView(String changeStr) {
+            tvResult.setText(changeStr);
+            tvHistory.setText(String.format("%s %s", String.join(" ", viewList), viewVal));
         }
     }
 
-//    private BigDecimal calculate() {
-//        return result;
-//    }
+    private BigDecimal calculate() {
+        BigDecimal result = new BigDecimal("0");
+        for (String s : rpnList) {
+            if ( isNumMatch(s) ) {
+                numStack.add(new BigDecimal(s));
+                continue;
+            }
+
+            if ("+".equals(s)) {
+                result = numStack.get(numStack.size() - 2).add(numStack.get(numStack.size() - 1));
+            }
+            else if ("-".equals(s)) {
+                result = numStack.get(numStack.size() - 2).subtract(numStack.get(numStack.size() - 1));
+            }
+            else if ("×".equals(s)) {
+                result = numStack.get(numStack.size() - 2).multiply(numStack.get(numStack.size() - 1));
+            }
+            else if ("÷".equals(s)) {
+                result = numStack.get(numStack.size() - 2).divide(numStack.get(numStack.size() - 1));
+            }
+            numStack.remove(numStack.size() - 2);
+            numStack.remove(numStack.size() - 1);
+            numStack.add(result);
+        }
+        return result;
+    }
 
     private void infixNotationToRPN() {
         for (String s : inputList) {
